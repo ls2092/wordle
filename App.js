@@ -1,16 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
 import LetterCircle from './components/LetterCircle';
 import WordBox from './components/WordBox';
 import { getValidWords } from './utils/wordUtils';
+import EntryScreen from './components/EntryScreen';
+import LoginForm from './components/LoginForm';
+import SignupForm from './components/SignupForm';
+import GameScreen from './components/GameScreen'; // ✅ imported GameScreen
 
 const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
 
 export default function App() {
+  const [screen, setScreen] = useState('entry');
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+
   const [letters, setLetters] = useState([]);
   const [validWords, setValidWords] = useState([]);
   const [guesses, setGuesses] = useState([]);
-  const [input, setInput] = useState('');
 
   const generateGame = () => {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz';
@@ -19,103 +35,117 @@ export default function App() {
     );
     setLetters(newLetters);
 
-    // Get all valid words from these letters
     let words = getValidWords(newLetters);
-
-    // Filter to max 6 unique random words (2 to 5 letters)
     if (words.length > 6) {
       words = shuffle(words).slice(0, 6);
     }
 
     setValidWords(words);
     setGuesses([]);
-    setInput('');
   };
 
   useEffect(() => {
     generateGame();
   }, []);
 
-  const handleGuess = () => {
-    const guess = input.toLowerCase();
+  const handleGuess = (guess) => {
+    guess = guess.toLowerCase();
 
     if (guesses.length >= 6) {
-      Alert.alert("Limit reached", "You've guessed the maximum of 6 words.");
-      setInput('');
+      Alert.alert('Limit reached', 'You have guessed 6 words.');
       return;
     }
 
     if (!validWords.includes(guess)) {
-      Alert.alert("Invalid word", "That word is not in the list of valid answers.");
+      Alert.alert('Invalid word', 'That word is not a valid answer.');
     } else if (guesses.includes(guess)) {
-      Alert.alert("Already guessed", "You already guessed that word.");
+      Alert.alert('Already guessed', 'You already guessed that word.');
     } else {
       setGuesses([...guesses, guess]);
     }
-
-    setInput('');
   };
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Word Circle Game</Text>
+  const handleLogin = (username, password) => {
+    const user = users.find(
+      (u) => u.username === username && u.password === password
+    );
+    if (user) {
+      setCurrentUser(user);
+      setScreen('game');
+    } else {
+      Alert.alert('Login Failed', 'Invalid username or password');
+    }
+  };
 
-      <LetterCircle letters={letters} />
+  const handleSignup = ({ email, password }) => {
+    const exists = users.find((u) => u.username === email);
+    if (exists) {
+      Alert.alert('Username already exists');
+    } else {
+      const newUser = { username: email, password };
+      setUsers([...users, newUser]);
+      setCurrentUser(newUser);
+      setScreen('game');
+    }
+  };
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter a word..."
-        value={input}
-        onChangeText={setInput}
+  const handleGuest = () => {
+    setCurrentUser({ username: 'Guest', password: '' });
+    setScreen('game');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setScreen('entry');
+  };
+
+  // Screen Routing
+  if (screen === 'entry') {
+    return (
+      <EntryScreen
+        onLogin={() => setScreen('login')}
+        onSignup={() => setScreen('signup')}
+        onContinue={handleGuest}
       />
-      <Button title="Submit Guess" onPress={handleGuess} />
+    );
+  }
 
-      <Text style={styles.progress}>
-        Words Guessed: {guesses.length} / {validWords.length}
-      </Text>
+  if (screen === 'login') {
+    return <LoginForm onLogin={handleLogin} onBack={() => setScreen('entry')} />;
+  }
 
-      {/* Render only 6 WordBoxes based on validWords */}
-      {[...Array(6)].map((_, i) => (
-        <WordBox
-          key={i}
-          wordLength={validWords[i]?.length || 3}
-          word={guesses.includes(validWords[i]) ? validWords[i] : null}
-        />
-      ))}
+  if (screen === 'signup') {
+    return <SignupForm onSignup={handleSignup} onBack={() => setScreen('entry')} />;
+  }
 
-      <View style={styles.buttonContainer}>
-        <Button title="New Game" onPress={generateGame} color="#8e44ad" />
-      </View>
-    </ScrollView>
-  );
+  if (screen === 'game') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.inner}>
+          <GameScreen
+            user={currentUser}
+            letters={letters}
+            validWords={validWords}
+            guesses={guesses}
+            onGuess={handleGuess}
+            onNewGame={generateGame}
+            onLogout={handleLogout}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  return null;
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  inner: {
     padding: 20,
-    paddingBottom: 80,
-  },
-  title: {
-    fontSize: 26,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#aaa',
-    padding: 10,
-    marginVertical: 10,
-    fontSize: 16,
-    borderRadius: 5,
-  },
-  progress: {
-    fontSize: 16,
-    marginVertical: 10,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    marginTop: 20,
-    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

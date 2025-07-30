@@ -2,10 +2,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const LetterCircle = ({ letters }) => {
+const DEFAULT_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+
+const LetterCircle = ({ letters = DEFAULT_LETTERS }) => {
   return (
     <View style={styles.circle}>
-      {letters.map((letter, index) => (
+      {(letters || DEFAULT_LETTERS).map((letter, index) => (
         <View key={index} style={styles.letterBox}>
           <Text style={styles.letter}>{letter.toUpperCase()}</Text>
         </View>
