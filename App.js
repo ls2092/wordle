@@ -118,6 +118,14 @@ export default function App() {
     return <SignupForm onSignup={handleSignup} onBack={() => setScreen('entry')} />;
   }
 
+  if (screen ==='welcome') {
+    return (
+      <View style={styles.welcomeScreen}>
+        <Text style={styles.welcomeText}>Welcome {currentUser?.username} || {currentUser?.email} || 'Guest' to the Game!</Text>
+      </View>
+    )
+  }
+  
   if (screen === 'game') {
     return (
       <SafeAreaView style={styles.container}>
@@ -130,6 +138,7 @@ export default function App() {
             onGuess={handleGuess}
             onNewGame={generateGame}
             onLogout={handleLogout}
+            onBack={handleBack}
           />
         </ScrollView>
       </SafeAreaView>
@@ -147,5 +156,16 @@ const styles = StyleSheet.create({
   inner: {
     padding: 20,
     justifyContent: 'center',
+  },
+  welcomeScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eef2f3',
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });

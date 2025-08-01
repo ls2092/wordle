@@ -29,7 +29,7 @@ const GameScreen = ({
         </TouchableOpacity>
 
         <Text style={styles.welcome}>
-          Welcome {user?.email || user?.username || 'Guest'}
+          Wordle
         </Text>
 
         {user?.email ? (
