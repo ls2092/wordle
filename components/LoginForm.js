@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // optional for icon back arrow
+import {View, Text, TextInput, StyleSheet,TouchableOpacity} from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; 
 
 const LoginForm = ({ onLogin, onBack }) => {
   const [email, setEmail] = useState('');
@@ -24,10 +18,9 @@ const LoginForm = ({ onLogin, onBack }) => {
     <View style={styles.container}>
       {/* Back Button at top-left */}
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
-        {/* Use an icon or text */}
+       
         <Text style={styles.backText}>←</Text>
-        {/* OR use Ionicons */}
-        {/* <Ionicons name="arrow-back" size={24} color="#000" /> */}
+        
       </TouchableOpacity>
 
       <Text style={styles.heading}>Login</Text>
