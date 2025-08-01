@@ -54,14 +54,15 @@ const GameScreen = ({
       </Text>
 
       <View style={styles.wordBoxContainer}>
-        {[...Array(6)].map((_, i) => (
-          <WordBox
-            key={i}
-            wordLength={validWords[i]?.length || 3}
-            word={guesses.includes(validWords[i]) ? validWords[i] : null}
-          />
-        ))}
+          {validWords.map((word, i) => (
+            <WordBox
+              key={i}
+              wordLength={word.length}
+              word={guesses.includes(word) ? word : null}
+            />
+          ))}
       </View>
+
 
       <View style={styles.buttonContainer}>
         <Button title="New Game" onPress={onNewGame} color="#8e44ad" />

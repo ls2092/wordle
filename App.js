@@ -15,7 +15,7 @@ import { getValidWords } from './utils/wordUtils';
 import EntryScreen from './components/EntryScreen';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
-import GameScreen from './components/GameScreen'; // ✅ imported GameScreen
+import GameScreen from './components/GameScreen';
 
 const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
 
@@ -28,22 +28,27 @@ export default function App() {
   const [validWords, setValidWords] = useState([]);
   const [guesses, setGuesses] = useState([]);
 
+  // ✅ Ensures the game starts with at least 5 valid words
   const generateGame = () => {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-    const newLetters = Array.from({ length: 5 }, () =>
-      alphabet[Math.floor(Math.random() * 26)]
-    );
-    setLetters(newLetters);
+    let newLetters = [];
+    let words = [];
 
-    let words = getValidWords(newLetters);
-    if (words.length > 6) {
-      words = shuffle(words).slice(0, 6);
+    while (words.length < 5) {
+      newLetters = Array.from({ length: 5 }, () =>
+        alphabet[Math.floor(Math.random() * 26)]
+      );
+      words = getValidWords(newLetters);
     }
 
-    setValidWords(words);
+    const selectedWords = shuffle(words).slice(0, 5);
+
+    setLetters(newLetters);
+    setValidWords(selectedWords);
     setGuesses([]);
   };
 
+  // ✅ Generate game once when the app loads
   useEffect(() => {
     generateGame();
   }, []);
@@ -51,8 +56,8 @@ export default function App() {
   const handleGuess = (guess) => {
     guess = guess.toLowerCase();
 
-    if (guesses.length >= 6) {
-      Alert.alert('Limit reached', 'You have guessed 6 words.');
+    if (guesses.length >= 5) {
+      Alert.alert('Limit reached', 'You have guessed 5 words.');
       return;
     }
 
@@ -71,7 +76,10 @@ export default function App() {
     );
     if (user) {
       setCurrentUser(user);
-      setScreen('game');
+      setScreen('welcome');
+      setTimeout(() => {
+        setScreen('game');
+      }, 2000);
     } else {
       Alert.alert('Login Failed', 'Invalid username or password');
     }
@@ -85,13 +93,19 @@ export default function App() {
       const newUser = { username: email, password };
       setUsers([...users, newUser]);
       setCurrentUser(newUser);
-      setScreen('game');
+      setScreen('welcome');
+      setTimeout(() => {
+        setScreen('game');
+      }, 2500);
     }
   };
 
   const handleGuest = () => {
     setCurrentUser({ username: 'Guest', password: '' });
-    setScreen('game');
+    setScreen('welcome');
+    setTimeout(() => {
+      setScreen('game');
+    }, 2000);
   };
 
   const handleLogout = () => {
@@ -99,7 +113,12 @@ export default function App() {
     setScreen('entry');
   };
 
-  // Screen Routing
+  const handleBack = () => {
+    setCurrentUser(null);
+    setScreen('entry');
+  };
+
+  // ✅ Screen Routing
   if (screen === 'entry') {
     return (
       <EntryScreen
@@ -118,14 +137,16 @@ export default function App() {
     return <SignupForm onSignup={handleSignup} onBack={() => setScreen('entry')} />;
   }
 
-  if (screen ==='welcome') {
+  if (screen === 'welcome') {
     return (
       <View style={styles.welcomeScreen}>
-        <Text style={styles.welcomeText}>Welcome {currentUser?.username} || {currentUser?.email} || 'Guest' to the Game!</Text>
+        <Text style={styles.welcomeText}>
+          Welcome {currentUser?.username || currentUser?.email || 'Guest'} to the Game!
+        </Text>
       </View>
-    )
+    );
   }
-  
+
   if (screen === 'game') {
     return (
       <SafeAreaView style={styles.container}>
